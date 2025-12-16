@@ -54,7 +54,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
         body {
-            font-family: 'Inter', 'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Malayalam', 'Noto Sans Telugu', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
@@ -116,9 +116,6 @@
 
         /* --- MAIN CONTAINER --- */
         .main-container { max-width: 800px; margin: 2rem auto; padding: 0 1.5rem; }
-
-        .section-view { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.3s ease; }
-        .section-view.active { display: block; opacity: 1; transform: translateY(0); }
 
         .section-title { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; background: -webkit-linear-gradient(45deg, var(--primary), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .section-desc { font-size: 1.1rem; color: var(--text-light); margin-bottom: 2.5rem; }
@@ -232,12 +229,12 @@
 
         /* --- CHAT UI --- */
         .chat-layout { height: 70vh; display: flex; flex-direction: column; }
-        .model-selector-bar { display: flex; gap: 10px; margin-bottom: 10px; padding: 10px; background: var(--bg-body); border-radius: 12px; }
+        .model-selector-bar { display: flex; gap: 10px; margin-bottom: 10px; padding: 10px; background: var(--bg-surface); border-radius: 12px; box-shadow: var(--neumorph-inset); }
         .model-select { 
             background: var(--bg-surface); border: none;
             padding: 10px 14px; border-radius: var(--radius-lg); 
             color: var(--text-main); outline: none; flex: 1; font-size: 0.95rem; font-family: inherit; font-weight: 600;
-            box-shadow: var(--neumorph-inset);
+            box-shadow: var(--neumorph-flat);
         }
         .api-key-input { 
             flex: 1.5; padding: 10px 14px; border-radius: var(--radius-md); 
@@ -276,6 +273,26 @@
         }
         .btn-send:active { box-shadow: var(--neumorph-inset); transform: scale(0.95); }
 
+        /* --- BOOKS GRID --- */
+        .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.5rem; }
+        
+        .media-card { background: var(--bg-surface); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--neumorph-flat); cursor: pointer; transition: transform 0.2s; }
+        .media-card:hover { transform: translateY(-5px); box-shadow: var(--neumorph-shadow); }
+        .media-thumb { height: 180px; background: #000; position: relative; overflow: hidden; }
+        .media-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .media-body { padding: 1rem; }
+        .media-title { font-weight: 700; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .media-meta { font-size: 0.8rem; color: var(--text-light); display: flex; align-items: center; gap: 6px; }
+        
+        .channel-badge { 
+            position: absolute; bottom: 10px; right: 10px; 
+            background: rgba(0,0,0,0.7); color: white; 
+            padding: 4px 10px; border-radius: 20px; 
+            font-size: 0.75rem; font-weight: 700; 
+            backdrop-filter: blur(4px);
+        }
+
         /* --- BOTTOM DOCK --- */
         .dock-container {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
@@ -290,7 +307,7 @@
         .dock-item {
             border: none; background: transparent;
             color: var(--text-light);
-            padding: 12px 24px; border-radius: 30px;
+            padding: 12px 20px; border-radius: 20px;
             cursor: pointer; font-weight: 700; font-size: 0.9rem;
             display: flex; flex-direction: column; align-items: center; gap: 6px;
             transition: all 0.3s;
@@ -304,6 +321,16 @@
 
         .error-toast { background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 12px; margin-top: 1rem; display: none; border: 1px solid #fecaca; align-items: center; gap: 10px; }
 
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            opacity: 0.7;
+        }
+
         /* Mobile Optimizations */
         @media (max-width: 768px) {
             .dock-container { width: 90%; justify-content: space-around; gap: 10px; padding: 15px; bottom: 20px; }
@@ -311,25 +338,56 @@
             .dock-item svg { width: 32px; height: 32px; }
             .metrics-grid { grid-template-columns: 1fr; }
         }
+
+        /* --- BOOK READER MODAL --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            z-index: 200; display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px); padding: 1rem;
+        }
+        
+        .reader-frame {
+            width: 100%; max-width: 900px; height: 85vh; max-height: 800px;
+            background: var(--bg-surface); border-radius: var(--radius-xl);
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: var(--neumorph-shadow);
+            animation: zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .reader-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .reader-img-box { flex: 1.5; background: #e0e5ec; overflow: hidden; min-height: 300px; position: relative; box-shadow: var(--neumorph-inset); margin: 1rem; border-radius: var(--radius-lg); }
+        .reader-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .reader-text-box { flex: 1; padding: 3rem; display: flex; align-items: center; justify-content: center; }
+        .reader-text { font-size: 1.4rem; line-height: 1.8; text-align: center; color: var(--text-main); max-width: 650px; }
+
+        .reader-nav {
+            padding: 1.5rem; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
     </style>
 </head>
 <body>
 
 <header class="app-header">
-    <div class="brand">
-        <div class="brand-icon"><i data-lucide="flower-2"></i></div>
-        <span>BabyBloom</span>
-    </div>
-    <div class="controls">
-        <select class="lang-select" id="langSelect" onchange="changeLanguage()">
-            <option value="en">English</option>
-            <option value="ur">Urdu</option>
-            <option value="hi">Hindi</option>
-            <option value="mr">Marathi</option>
-            <option value="ml">Malayalam</option>
-            <option value="te">Telugu</option>
-        </select>
-        <button class="btn-neu" onclick="toggleTheme()"><i data-lucide="moon"></i></button>
+    <div class="header-content">
+        <div class="brand">
+            <div class="brand-icon"><i data-lucide="flower-2"></i></div>
+            <span>BabyBloom</span>
+        </div>
+        <div class="controls">
+            <select class="lang-select" id="langSelect" onchange="changeLanguage()">
+                <option value="en">English</option>
+                <option value="ur">Urdu</option>
+                <option value="hi">Hindi</option>
+                <option value="mr">Marathi</option>
+                <option value="ml">Malayalam</option>
+                <option value="te">Telugu</option>
+            </select>
+            <button class="btn-neu" onclick="toggleTheme()"><i data-lucide="moon"></i></button>
+        </div>
     </div>
 </header>
 
@@ -354,10 +412,7 @@
                 <canvas id="visualizerCanvas"></canvas>
             </div>
 
-            <div id="errorToast" class="error-toast">
-                <i data-lucide="alert-circle"></i>
-                <span id="errorMsg">Error processing audio</span>
-            </div>
+            <div id="errorToast" style="display:none; color: #ef4444; margin-top: 10px; text-align: center;">Error: Microphone Access Required</div>
 
             <button id="analyzeBtn" class="btn-action" onclick="runAnalysis()" disabled>
                 <span id="txt-btn-analyze">Analyze Pattern</span> <i data-lucide="activity"></i>
@@ -405,10 +460,10 @@
                 <h2 class="section-title" id="title-assistant">AI Assistant</h2>
                 <div class="model-selector-bar">
                     <select id="modelSelect" class="model-select" onchange="toggleApiKeyInput()">
-                        <option value="gemini_free">⚡ Gemini (Free Mode)</option>
-                        <option value="mascot_free">🧸 Mascot (Free Mode)</option>
-                        <option value="gemini">🔑 Gemini Pro (API Key)</option>
-                        <option value="gpt">🔑 OpenAI GPT-4 (API Key)</option>
+                        <option value="gemini_free">⚡ Gemini (Free)</option>
+                        <option value="mascot_free">🧸 Mascot (Free)</option>
+                        <option value="gemini">🔑 Gemini Pro (Key)</option>
+                        <option value="gpt">🔑 OpenAI GPT-4 (Key)</option>
                     </select>
                     <input type="password" id="apiKeyInput" class="api-key-input" placeholder="Paste API Key here...">
                 </div>
@@ -423,6 +478,12 @@
         </div>
     </section>
 
+
+
+    <footer style="text-align: center; padding: 20px; color: var(--text-light); font-size: 0.9rem; margin-top: 2rem; opacity: 0.7;">
+        &copy;&reg;BabyBloom by Mohsin Khan. All Rights Reserved.
+    </footer>
+
 </main>
 
 <div class="dock-container">
@@ -432,6 +493,33 @@
     <button class="dock-item" onclick="navTo('tab-chat', this)">
         <i data-lucide="bot"></i> <span id="nav-assistant">Assistant</span>
     </button>
+    <button class="dock-item" onclick="navTo('tab-stories', this)">
+        <i data-lucide="book-open"></i> <span id="nav-library">Books</span>
+    </button>
+</div>
+
+<!-- READER MODAL -->
+<div class="modal-overlay" id="storyModal">
+    <div class="reader-frame">
+        <button onclick="closeModal()" style="position: absolute; top: 20px; right: 20px; background: var(--bg-surface); border: none; color: var(--text-light); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--neumorph-flat); z-index: 10;">
+            <i data-lucide="x"></i>
+        </button>
+        
+        <div class="reader-content">
+            <div class="reader-img-box">
+                <img id="pageImg" class="reader-img" src="" alt="Story Page" onerror="this.src='https://picsum.photos/seed/error/800/600';">
+            </div>
+            <div class="reader-text-box">
+                <div id="pageText" class="reader-text"></div>
+            </div>
+        </div>
+
+        <div class="reader-nav">
+            <button onclick="changePage(-1)" id="btnPrev" class="btn-neu" style="width: auto; padding: 10px 20px; border-radius: 20px; font-weight: 700;">Previous</button>
+            <span id="pageIndicator" style="font-weight: 700; color: var(--text-light);">1 / 4</span>
+            <button onclick="changePage(1)" id="btnNext" class="btn-neu" style="width: auto; padding: 10px 20px; border-radius: 20px; font-weight: 700; color: var(--primary);">Next Page</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -443,8 +531,8 @@
                 suggestion: "Recommendation", diagnosis: "AI Diagnosis",
                 freq: "Pitch (Hz)", conf: "Confidence", source: "Source",
                 titleAnalyzer: "AI Cry Translator", descAnalyzer: "Analyze audio patterns to decode needs.",
-                titleAssistant: "AI Assistant",
-                navAnalyzer: "Analyzer", navAssistant: "Assistant",
+                titleAssistant: "AI Assistant", titleLibrary: "Books",
+                navAnalyzer: "Analyzer", navAssistant: "Assistant", navLibrary: "Books",
                 tapRecord: "Tap to Record", recording: "Recording..."
             },
             results: {
@@ -452,7 +540,54 @@
                 pain: { t: "Pain", d: "High-intensity shrieks detected.", s: "Check for injury or physical discomfort." },
                 tired: { t: "Tiredness", d: "Low frequency 'Owh' pattern.", s: "Swaddle baby and reduce noise." }
             },
-            chatWelcome: "Hi! I'm your BabyBloom Assistant. Ask me about sleep, feeding, or health."
+            chatWelcome: "Hi! I'm your BabyBloom Assistant. Ask me about sleep, feeding, or health.",
+            books: [
+                { 
+                    id: "chores", title: "Doing My Chores", cover: "https://picsum.photos/seed/chore1/500/700",
+                    pages: [
+                        { img: "https://picsum.photos/seed/chore1/800/600", text: "I like doing my chores. Well, maybe not all of them but most of them. When I do my chores, it helps my Mommy and Daddy, and as you know Mummies and Daddies sometimes need a lot of help." },
+                        { img: "https://picsum.photos/seed/chore2/800/600", text: "Sometimes I have chores that I do not like to do. When that happens I make up a silly game and that makes the chore easier. Like yesterday, I had to put my laundry away and I pretended that I was hiding it from my Mommy." },
+                        { img: "https://picsum.photos/seed/chore3/800/600", text: "Sometimes when all my chores are done, we go to the park or have other special time. I know if my chores weren't done we wouldn't be able to do that." },
+                        { img: "https://picsum.photos/seed/chore4/800/600", text: "When I do my chores, it makes me feel important and I like to be important. Don't you? So be important and have some fun. Do your chores until they are done." }
+                    ]
+                },
+                { 
+                    id: "ginger", title: "Ginger The Giraffe", cover: "https://picsum.photos/seed/giraffe1/500/700",
+                    pages: [
+                        { img: "https://picsum.photos/seed/giraffe1/800/600", text: "Once upon a time, there was a giraffe named Ginger. She lived in Kenya, a country in Africa. Like all giraffes, Ginger had a long neck and long legs to eat food from the tops of the trees." },
+                        { img: "https://picsum.photos/seed/giraffe2/800/600", text: "One day, Ginger saw her friend Mickey the Monkey. He was very hungry because it hadn't rained. Ginger shared her fresh leaves with him. 'We should go talk to Leo the Lion,' said Ginger." },
+                        { img: "https://picsum.photos/seed/giraffe3/800/600", text: "Leo the Lion told them, 'The only thing I can think of is for everyone to move closer to the forest.' So Ginger gathered all the animals for the long journey." },
+                        { img: "https://picsum.photos/seed/giraffe4/800/600", text: "Suddenly, a fire started! Ginger stretched her long neck and saw a safe path. 'Quick! Run this way!' she yelled. Just then, rain began to fall, saving the savannah!" }
+                    ]
+                },
+                { 
+                    id: "hammy", title: "Hammy The Hamster", cover: "https://picsum.photos/seed/hamster1/500/700",
+                    pages: [
+                        { img: "https://picsum.photos/seed/hamster1/800/600", text: "I am Hammy the Hamster. I live with my mother Henrietta and father Harry in South America. Our home is a burrow under trees that look like the letter H." },
+                        { img: "https://picsum.photos/seed/hamster2/800/600", text: "We are mostly out after dark to stay safe. We like to eat seeds and fruit and can carry it back home in our pouches. Our cheeks have built-in shopping bags!" },
+                        { img: "https://picsum.photos/seed/hamster3/800/600", text: "Just like you, we like to play. We run into the light, chase our shadows, climb things, and explore the world around us." },
+                        { img: "https://picsum.photos/seed/hamster4/800/600", text: "I might be your pet someday. If I ever become your pet, I hope you take good care of me because I will do all I can to be your friend." }
+                    ]
+                },
+                { 
+                    id: "hide_seek", title: "Hide and Seek", cover: "https://picsum.photos/seed/hide1/500/700",
+                    pages: [
+                        { img: "https://picsum.photos/seed/hide1/800/600", text: "James, his sister Sally, and Mark were bored. 'Let's play Hide-and Seek!' said Sally. Mark started counting while the others ran to hide." },
+                        { img: "https://picsum.photos/seed/hide2/800/600", text: "Mark found James, but they couldn't find Sally. They called her name, but she didn't answer. Sally had fallen into a small hidden cave!" },
+                        { img: "https://picsum.photos/seed/hide3/800/600", text: "Mark's dad came to the rescue with a rope. Inside the cave, they found an old box wrapped in blankets. It was full of jewels and gold coins!" },
+                        { img: "https://picsum.photos/seed/hide4/800/600", text: "The police told Sally the treasure was hers! Sally decided to share it with her family and give the rest to charity to help people in need." }
+                    ]
+                },
+                { 
+                    id: "up_air", title: "Up in the Air", cover: "https://picsum.photos/seed/sky1/500/700",
+                    pages: [
+                        { img: "https://picsum.photos/seed/sky1/800/600", text: "When you stand at your window and look down, you see many things moving on the ground. But if you lift your head, there are things that glide, fly, and zoom by." },
+                        { img: "https://picsum.photos/seed/sky2/800/600", text: "Birds of all shapes and sizes flap their way across the sky. Eagles, crows, and robins. You might also see tiny hummingbirds or huge noisy helicopters." },
+                        { img: "https://picsum.photos/seed/sky3/800/600", text: "If you feel left out, just grow up to be a pilot and you can fly an airplane! Or become an astronaut and go to the moon in a spacecraft." },
+                        { img: "https://picsum.photos/seed/sky4/800/600", text: "Get your kite or balloon and fly it into the sky. Watch it dance against the clouds. There are as many things up in the air as there are on the ground!" }
+                    ]
+                }
+            ]
         },
         ur: {
             ui: { 
@@ -460,8 +595,8 @@
                 suggestion: "مشورہ", diagnosis: "تشخیص",
                 freq: "فریکوئنسی", conf: "یقین", source: "ذریعہ",
                 titleAnalyzer: "اے آئی کرائی مترجم", descAnalyzer: "بچے کی ضروریات کو سمجھنے کے لیے آڈیو ریکارڈ کریں۔",
-                titleAssistant: "اے آئی اسسٹنٹ",
-                navAnalyzer: "تجزیہ کار", navAssistant: "معاون",
+                titleAssistant: "اے آئی اسسٹنٹ", titleLibrary: "کتابیں",
+                navAnalyzer: "تجزیہ کار", navAssistant: "معاون", navLibrary: "کتابیں",
                 tapRecord: "ریکارڈ کے لیے دبائیں", recording: "ریکارڈنگ..."
             },
             results: {
@@ -469,7 +604,8 @@
                 pain: { t: "درد", d: "تیز اور اونچی آوازیں۔", s: "چوٹ یا بخار چیک کریں۔" },
                 tired: { t: "تھکاوٹ", d: "کم فریکوئنسی 'اوہ' آواز۔", s: "بچے کو لپیٹیں اور شور کم کریں۔" }
             },
-            chatWelcome: "ہیلو! میں آپ کا بیبی بلوم اسسٹنٹ ہوں۔"
+            chatWelcome: "ہیلو! میں آپ کا بیبی بلوم اسسٹنٹ ہوں۔",
+            books: []
         },
         hi: {
             ui: { 
@@ -477,8 +613,8 @@
                 suggestion: "सुझाव", diagnosis: "निदान",
                 freq: "आवृत्ति", conf: "विश्वास", source: "स्रोत",
                 titleAnalyzer: "एआई क्राय ट्रांसलेटर", descAnalyzer: "बच्चे की जरूरतों को समझने के लिए ऑडियो रिकॉर्ड करें।",
-                titleAssistant: "एआई सहायक",
-                navAnalyzer: "विश्लेषक", navAssistant: "सहायक",
+                titleAssistant: "एआई सहायक", titleLibrary: "किताबें",
+                navAnalyzer: "विश्लेषक", navAssistant: "सहायक", navLibrary: "किताबें",
                 tapRecord: "रिकॉर्ड करने के लिए टैप करें", recording: "रिकॉर्डिंग..."
             },
             results: {
@@ -486,7 +622,8 @@
                 pain: { t: "दर्द", d: "तेज और ऊंची आवाज।", s: "चोट या बेचैनी की जांच करें।" },
                 tired: { t: "थकान", d: "धीमी 'ओह' ध्वनि।", s: "बच्चे को लपेटें और शोर कम करें।" }
             },
-            chatWelcome: "नमस्ते! मैं आपका बेबीब्लूम सहायक हूँ।"
+            chatWelcome: "नमस्ते! मैं आपका बेबीब्लूम सहायक हूँ।",
+            books: []
         },
         mr: {
             ui: { 
@@ -494,8 +631,8 @@
                 suggestion: "शिफारस", diagnosis: "निदान",
                 freq: "वारंवारता", conf: "विश्वास", source: "स्रोत",
                 titleAnalyzer: "एआय क्राय ट्रान्सलेटर", descAnalyzer: "गरजा समजून घेण्यासाठी ऑडिओ रेकॉर्ड करा.",
-                titleAssistant: "एआय सहाय्यक",
-                navAnalyzer: "विश्लेषक", navAssistant: "सहाय्यक",
+                titleAssistant: "एआय सहाय्यक", titleLibrary: "पुस्तके",
+                navAnalyzer: "विश्लेषक", navAssistant: "सहाय्यक", navLibrary: "पुस्तके",
                 tapRecord: "रेकॉर्ड करा", recording: "रेकॉर्डिंग..."
             },
             results: {
@@ -503,17 +640,18 @@
                 pain: { t: "वेदना", d: "मोठ्या आवाजाचे नमुने.", s: "दुखापत तपासा." },
                 tired: { t: "थकवा", d: "जांभई सारखे आवाज.", s: "बाळाला झोपवा." }
             },
-            chatWelcome: "नमस्कार! मी तुमचा बेबीब्लूम सहाय्यक आहे."
+            chatWelcome: "नमस्कार! मी तुमचा बेबीब्लूम सहाय्यक आहे.",
+            books: []
         }
-        // ... (Similar partial structures for ml, te, ur would be here)
     };
 
     // Auto-fill other languages with English fallback
-    ['ml', 'te'].forEach(lang => { 
-        if(!DB[lang]) DB[lang] = JSON.parse(JSON.stringify(DB.en)); 
+    ['hi', 'mr', 'ml', 'te', 'ur'].forEach(lang => { 
+        if(!DB[lang]) DB[lang] = JSON.parse(JSON.stringify(DB.en));
+        else if (!DB[lang].books || DB[lang].books.length === 0) DB[lang].books = DB.en.books; // Ensure books exist for all languages
     });
 
-    let STATE = { lang: 'en', audioCtx: null, mediaRecorder: null };
+    let STATE = { lang: 'en', audioCtx: null, mediaRecorder: null, currentBook: null, page: 0 };
 
     // --- INIT ---
     lucide.createIcons();
@@ -531,8 +669,12 @@
         document.getElementById('title-analyzer').innerText = d.ui.titleAnalyzer;
         document.getElementById('desc-analyzer').innerText = d.ui.descAnalyzer;
         document.getElementById('title-assistant').innerText = d.ui.titleAssistant;
+        document.getElementById('title-library').innerText = d.ui.titleLibrary;
         document.getElementById('nav-analyzer').innerText = d.ui.navAnalyzer;
         document.getElementById('nav-assistant').innerText = d.ui.navAssistant;
+        document.getElementById('nav-library').innerText = d.ui.navLibrary;
+
+        renderBooks(d.books);
 
         const cw = document.getElementById('chatWindow');
         if(cw.innerHTML === '') appendChat(d.chatWelcome, 'ai');
@@ -577,7 +719,7 @@
                 setupVis(stream);
             } catch (err) {
                 document.getElementById('errorToast').style.display = 'block';
-                document.getElementById('errorMsg').innerText = "Microphone access required";
+                document.getElementById('errorMsg').innerText = "Microphone access is required.";
             }
         }
     }
@@ -631,6 +773,51 @@
             btn.innerHTML = d.ui.btnAnalyze;
         }, 2000);
     };
+
+    // --- BOOKS ---
+    function renderBooks(list) {
+        document.getElementById('storyGrid').innerHTML = list.map((b, i) => `
+            <div class="media-card" onclick="openBook(${i})">
+                <div class="media-thumb">
+                    <img src="${b.cover}" style="width:100%; height:100%; object-fit:cover;">
+                    <div class="channel-badge">Read</div>
+                </div>
+                <div class="media-body">
+                    <div class="media-title">${b.title}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.openBook = (i) => {
+        STATE.currentBook = DB[STATE.lang].books[i];
+        STATE.page = 0;
+        loadPage();
+        document.getElementById('storyModal').style.display = 'flex';
+    };
+    window.closeModal = () => document.getElementById('storyModal').style.display = 'none';
+    
+    window.changePage = (d) => {
+        const next = STATE.page + d;
+        if(next >= 0 && next < STATE.currentBook.pages.length) {
+            STATE.page = next;
+            loadPage();
+        }
+    };
+    
+    function loadPage() {
+        const p = STATE.currentBook.pages[STATE.page];
+        document.getElementById('pageImg').src = p.img;
+        document.getElementById('pageText').innerText = p.text;
+        document.getElementById('pageIndicator').innerText = `${STATE.page+1} / ${STATE.currentBook.pages.length}`;
+        document.getElementById('btnPrev').disabled = STATE.page === 0;
+        document.getElementById('btnNext').innerText = STATE.page === STATE.currentBook.pages.length - 1 ? 'Finish' : 'Next';
+        if(STATE.page === STATE.currentBook.pages.length - 1) {
+            document.getElementById('btnNext').onclick = closeModal;
+        } else {
+            document.getElementById('btnNext').onclick = () => changePage(1);
+        }
+    }
 
     // --- CHAT ---
     window.toggleApiKeyInput = function() {
